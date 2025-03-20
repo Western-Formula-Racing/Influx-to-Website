@@ -363,3 +363,26 @@ body {
   font-size: 0.875rem;
   color: white;
 }
+
+.countdown-wrapper {
+  display: flex;
+  justify-content: center; /* Centers the countdowns horizontally */
+  gap: 20px; /* Adds space between the countdowns */
+  padding: 10px 0; /* Adds some padding */
+  position: relative; /* Ensures it stays positioned properly */
+  z-index: 10; /* Ensures it stays above the background */
+}
+
+.countdown-container {
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 200px;
+}
+
+.countdown-timer {
+  font-size: 1.5rem;
+  font-weight: bold;
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Link, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
@@ -9,13 +9,44 @@ import WFRLogo from './assets/WFR_DAQ_Logo.png';
 import OldGLV from "./oldGLV";
 import "./App.css";
 import WFRFullLogo from './assets/WFR_DAQ_Logo.png';
+
+function Countdown({ eventName, eventDate }) {
+  const calculateTimeLeft = () => {
+    const difference = new Date(eventDate) - new Date();
+    if (difference <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+    return {
+      days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+      minutes: Math.floor((difference / (1000 * 60)) % 60),
+      seconds: Math.floor((difference / 1000) % 60),
+    };
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="countdown-container">
+      <h2>{eventName}</h2>
+      <div className="countdown-timer">
+        {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+      </div>
+    </div>
+  );
+}
 import ECVM from './ECVM';
 
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
-  // to bypsss the login page
-  // return children;
   const { isLoggedIn, loading } = useAuth();
 
   if (loading) {
@@ -53,11 +84,10 @@ function LogoutButton() {
 
 function Home() {
   return (
-    <div className="hero-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      {/* Remove the text elements and just display the image */}
-      <img 
-        src={WFRFullLogo} 
-        alt="Western Formula Racing Data Acquisition" 
+    <div className="hero-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+      <img
+        src={WFRFullLogo}
+        alt="Western Formula Racing Data Acquisition"
         style={{
           maxWidth: '80%',
           maxHeight: '80vh',
@@ -74,7 +104,7 @@ function App() {
       <div className="app-container">
         {/* Dark overlay */}
         <div className="overlay" />
-        
+
         {/* Content container with higher z-index */}
         <div className="content-container">
           {/* Navigation */}
@@ -95,6 +125,11 @@ function App() {
               <LogoutButton />
             </div>
           </nav>
+
+          <div className="countdown-wrapper">
+            <Countdown eventName="New Hampshire Competition" eventDate="April 24, 2025" />
+            <Countdown eventName="Michigan Competition" eventDate="June 17, 2025" />
+          </div>
 
           <Routes>
             <Route path="/" element={<Home />} />
