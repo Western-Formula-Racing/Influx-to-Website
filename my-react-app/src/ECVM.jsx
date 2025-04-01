@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js'; // **Added Plotly import for live map component**
-import LiveTrackMap from '../../backend/api/lap_map/LiveTrackMap.jsx'
+import LiveTrackMap from '../../backend/api/ECVM/LiveTrackMap.jsx'
 
 const FSAEDisplay = () => {
     // Extended state with additional sensor values
@@ -105,8 +105,8 @@ const FSAEDisplay = () => {
         const containerStyle = {
             position: "relative",
             margin: "0 auto",
-            width: "16rem",
-            height: "12rem",
+            width: "12rem",  // **Changed width to be narrower**
+            height: "16rem", // **Changed height to be taller**
             border: "2px solid #6b7280",
             borderRadius: "0.25rem"
         };
@@ -157,6 +157,10 @@ const FSAEDisplay = () => {
         return (
             <div style={containerStyle}>
                 <div style={carOutlineStyle}></div>
+                <div style={{ position: "absolute", top: "1.5rem", left: "-0.75rem", width: "1.5rem", height: "3rem", backgroundColor: "#6b7280", borderRadius: "0.25rem" }}></div>
+                <div style={{ position: "absolute", top: "1.5rem", right: "-0.75rem", width: "1.5rem", height: "3rem", backgroundColor: "#6b7280", borderRadius: "0.25rem" }}></div>
+                <div style={{ position: "absolute", bottom: "1.5rem", left: "-0.75rem", width: "1.5rem", height: "3rem", backgroundColor: "#6b7280", borderRadius: "0.25rem" }}></div>
+                <div style={{ position: "absolute", bottom: "1.5rem", right: "-0.75rem", width: "1.5rem", height: "3rem", backgroundColor: "#6b7280", borderRadius: "0.25rem" }}></div>
                 <div style={{ ...wheelStyle, top: "1rem", left: "1rem" }}>
                     <span style={getColorStyle(data.wheelSpeedFL, { low: 0, high: 100 })}>
                         {data.wheelSpeedFL.toFixed(1)}
@@ -609,13 +613,12 @@ const FSAEDisplay = () => {
                 <div style={columnStyle}>
                     {/*Components for the left column*/}
                     <VehicleOutline />
-                    <SystemStatus />
                     <PowertrainStatus />
 
                 </div>
                 {/*Components for the right column*/}
                 <div style={columnStyle}>
-
+                    <SystemStatus />
                     <ControlInputs />
                     <WarningPanel />
                     <LiveTrackMap /> {/* Moved here to place under Status */}

@@ -27,8 +27,11 @@ lap_start_time = time.time()   # Timestamp when current lap started
 def generate_point(t):
     """Generate a point on an elliptical path with slight noise."""
     theta = 2 * math.pi * ((t % LAP_DURATION) / LAP_DURATION)
-    lat = CENTER_LAT + SEMIMAJOR * math.sin(theta) + random.uniform(-0.00001, 0.00001)
-    lon = CENTER_LON + SEMIMINOR * math.cos(theta) + random.uniform(-0.00001, 0.00001)
+    drift_meters = 5  # maximum drift in meters
+    lat_drift = random.uniform(-drift_meters, drift_meters) / LAT_FACTOR
+    lon_drift = random.uniform(-drift_meters, drift_meters) / LON_FACTOR
+    lat = CENTER_LAT + SEMIMAJOR * math.sin(theta) + lat_drift
+    lon = CENTER_LON + SEMIMINOR * math.cos(theta) + lon_drift
     return lat, lon
 
 def euclidean_distance(lat1, lon1, lat2, lon2):
