@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Plot from 'react-plotly.js'; // **Added Plotly import for live map component**
+import LiveTrackMap from '../../backend/api/lap_map/LiveTrackMap.jsx'
 
 const FSAEDisplay = () => {
     // Extended state with additional sensor values
@@ -156,24 +158,24 @@ const FSAEDisplay = () => {
             <div style={containerStyle}>
                 <div style={carOutlineStyle}></div>
                 <div style={{ ...wheelStyle, top: "1rem", left: "1rem" }}>
-          <span style={getColorStyle(data.wheelSpeedFL, { low: 0, high: 100 })}>
-            {data.wheelSpeedFL.toFixed(1)}
-          </span>
+                    <span style={getColorStyle(data.wheelSpeedFL, { low: 0, high: 100 })}>
+                        {data.wheelSpeedFL.toFixed(1)}
+                    </span>
                 </div>
                 <div style={{ ...wheelStyle, top: "1rem", right: "1rem" }}>
-          <span style={getColorStyle(data.wheelSpeedFR, { low: 0, high: 100 })}>
-            {data.wheelSpeedFR.toFixed(1)}
-          </span>
+                    <span style={getColorStyle(data.wheelSpeedFR, { low: 0, high: 100 })}>
+                        {data.wheelSpeedFR.toFixed(1)}
+                    </span>
                 </div>
                 <div style={{ ...wheelStyle, bottom: "1rem", left: "1rem" }}>
-          <span style={getColorStyle(data.wheelSpeedRL, { low: 0, high: 100 })}>
-            {data.wheelSpeedRL.toFixed(1)}
-          </span>
+                    <span style={getColorStyle(data.wheelSpeedRL, { low: 0, high: 100 })}>
+                        {data.wheelSpeedRL.toFixed(1)}
+                    </span>
                 </div>
                 <div style={{ ...wheelStyle, bottom: "1rem", right: "1rem" }}>
-          <span style={getColorStyle(data.wheelSpeedRR, { low: 0, high: 100 })}>
-            {data.wheelSpeedRR.toFixed(1)}
-          </span>
+                    <span style={getColorStyle(data.wheelSpeedRR, { low: 0, high: 100 })}>
+                        {data.wheelSpeedRR.toFixed(1)}
+                    </span>
                 </div>
                 <div style={centerTextStyle}>
                     <div style={speedTextStyle}>
@@ -492,7 +494,7 @@ const FSAEDisplay = () => {
         );
     };
 
-    // WarningPanel component (unchanged)
+    // WarningPanel component
     const WarningPanel = () => {
         const containerStyle = {
             width: "100%",
@@ -608,10 +610,13 @@ const FSAEDisplay = () => {
                     <VehicleOutline />
                     <SystemStatus />
                     <PowertrainStatus />
+                    <LiveTrackMap />
+
                 </div>
                 <div style={columnStyle}>
                     <ControlInputs />
                     <WarningPanel />
+                    <LiveTrackMap /> {/* Moved here to place under Status */}
                 </div>
             </div>
         </div>

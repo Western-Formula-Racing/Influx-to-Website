@@ -346,3 +346,80 @@ This project now includes a comprehensive authentication system using MongoDB an
 - Protected routes will automatically check for valid authentication
 - The token is stored in localStorage and will persist until logout
 - Admin users have additional privileges to manage other users
+
+
+# lap.py Lap Detector
+## 🚀 API: `GET /api/track`
+
+### 1. 📍 Location Data
+- **Query**: `?type=location`
+- **Description**: Returns the most recent GPS coordinate (latitude and longitude) of the vehicle.
+- **Response**:
+```json
+{
+  "location": {
+    "lat": 42.06648123,
+    "lon": -84.24137456
+  }
+}
+```
+- **Example Usage**:
+```bash
+curl "http://127.0.0.1:8050/api/track?type=location"
+```
+
+```js
+fetch("http://127.0.0.1:8050/api/track?type=location")
+  .then(res => res.json())
+  .then(data => console.log(data.location));
+```
+
+---
+
+### 2. 🏁 Last Completed Lap
+- **Query**: `?type=lap`
+- **Description**: Returns the latest completed lap with GPS path and start/end timestamps.
+- **Response**:
+```json
+{
+  "lap": {
+    "points": {
+      "lats": [42.0664, 42.0665, ...],
+      "lons": [-84.2413, -84.2412, ...]
+    },
+    "start_time": 1711931802.745823,
+    "end_time": 1711931823.462191
+  }
+}
+```
+- **Example Usage**:
+```bash
+curl "http://127.0.0.1:8050/api/track?type=lap"
+```
+
+```python
+import requests
+res = requests.get("http://127.0.0.1:8050/api/track?type=lap")
+lap = res.json()["lap"]
+print(lap["start_time"], lap["end_time"])
+```
+
+---
+
+### 3. ❌ Invalid Request
+- If an unsupported `type` is passed, the response will be:
+```json
+{
+  "error": "Invalid request type"
+}
+```
+- **HTTP Status**: `400 Bad Request`
+
+---
+
+### 📘 Summary
+
+| Endpoint                     | Type         | Description                     | Response Key |
+|-----------------------------|--------------|----------------------------------|--------------|
+| `/api/track?type=location`  | `location`   | Returns latest GPS point         | `location`   |
+| `/api/track?type=lap`       | `lap`        | Returns last completed lap       | `lap`        |
