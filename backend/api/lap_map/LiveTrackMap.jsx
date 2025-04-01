@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
+import daqcar from '../../../my-react-app/src/assets/daqcar.png';
 
 const LiveTrackMap = () => {
     // Default fallback location for map centering
