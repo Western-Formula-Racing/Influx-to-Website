@@ -607,13 +607,15 @@ const FSAEDisplay = () => {
             <div style={headerStyle}>ELECTRONIC CENTRALIZED VEHICLE MONITORING</div>
             <div style={gridContainerStyle}>
                 <div style={columnStyle}>
+                    {/*Components for the left column*/}
                     <VehicleOutline />
                     <SystemStatus />
                     <PowertrainStatus />
-                    <LiveTrackMap />
 
                 </div>
+                {/*Components for the right column*/}
                 <div style={columnStyle}>
+
                     <ControlInputs />
                     <WarningPanel />
                     <LiveTrackMap /> {/* Moved here to place under Status */}

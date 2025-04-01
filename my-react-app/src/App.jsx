@@ -85,6 +85,10 @@ function LogoutButton() {
 function Home() {
   return (
     <div className="hero-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+      <div className="countdown-wrapper">
+        <Countdown eventName="New Hampshire Competition" eventDate="April 24, 2025" />
+        <Countdown eventName="Michigan Competition" eventDate="June 17, 2025" />
+      </div>
       <img
         src={WFRFullLogo}
         alt="Western Formula Racing Data Acquisition"
@@ -125,11 +129,6 @@ function App() {
               <LogoutButton />
             </div>
           </nav>
-
-          <div className="countdown-wrapper">
-            <Countdown eventName="New Hampshire Competition" eventDate="April 24, 2025" />
-            <Countdown eventName="Michigan Competition" eventDate="June 17, 2025" />
-          </div>
 
           <Routes>
             <Route path="/" element={<Home />} />
