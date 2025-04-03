@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js'; // **Added Plotly import for live map component**
 import LiveTrackMap from '../../backend/api/ECVM/LiveTrackMap.jsx'
 
+// Color
+
+const colorGrey = "#6b7280";
+const colorGreen = "#4ade80";
+
+
+
+
 const FSAEDisplay = () => {
     // Extended state with additional sensor values
     const [data, setData] = useState({
@@ -151,7 +159,12 @@ const FSAEDisplay = () => {
 
         const subTextStyle = {
             fontSize: "0.75rem",
-            color: "#4ade80"
+            color: "#4ade80",
+            whiteSpace: "nowrap",
+            overflow: "visible",
+            width: "4.5rem",
+            textAlign: "center",
+            display: "inline-block"
         };
 
         return (
@@ -191,11 +204,22 @@ const FSAEDisplay = () => {
                             justifyContent: "space-between",
                             width: "100%",
                             padding: "0 1rem",
-                            marginTop: "0.5rem"
+                            marginTop: "0.5rem",
+                            overflow: "visible"
                         }}
                     >
-                        <div style={subTextStyle}>SAT: {data.satelliteSpeed.toFixed(1)}</div>
-                        <div style={subTextStyle}>PITOT: {data.pitotSpeed.toFixed(1)}</div>
+                        <div style={subTextStyle}>
+                            SAT
+                            <span style={{ display: "inline-block", width: "3rem", textAlign: "right", fontFamily: "monospace" }}>
+                                {data.satelliteSpeed.toFixed(1)}
+                            </span>
+                        </div>
+                        <div style={subTextStyle}>
+                            PITOT
+                            <span style={{ display: "inline-block", width: "3rem", textAlign: "right", fontFamily: "monospace" }}>
+                                {data.pitotSpeed.toFixed(1)}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -555,8 +579,9 @@ const FSAEDisplay = () => {
                         </div>
                         <div style={borderBoxStyle}>
                             <div style={labelStyle}>SEAT BELT:</div>
-                            <div style={{ fontWeight: "bold", color: data.rtdStatus ? "#4ade80" : "#6b7280" }}>
-                                {data.rtdStatus ? "ON" : ""}
+                            <div style={{ fontWeight: "bold", color: colorGreen }}>
+                                {/*{data.rtdStatus ? "ON" : ""}*/}
+                                ON
                             </div>
                         </div>
                     </div>

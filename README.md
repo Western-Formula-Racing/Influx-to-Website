@@ -161,6 +161,24 @@ On the live monitor dashboard, the x-axis of the plot should be -60s to 0s (curr
 
 # Hosting
 
+### Install Docker
+
+```
+sudo apt update
+sudo apt upgrade -y
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+
+sudo apt-get install docker-ce
+sudo docker run hello-world
+```
+
+
+
+### Set up Docker/Influx
+
 1. Export local docker: docker tag influxdb:latest myusername/influxdb:latest
 
 docker push myusername/influxdb:latest
@@ -255,8 +273,10 @@ HTTP/1.1 204 No Content
 3️⃣ Test from your **local machine**:
 
 ```
-curl -i http://35.183.158.105:8086/ping
+curl -i http://YOURIP:8086/ping
 ```
+
+You can also try to access the GUI through http://YOURIP:8086
 
 If this fails, double-check **AWS Lightsail Firewall Rules** to **allow inbound traffic on port 8086**.
 
@@ -279,7 +299,7 @@ Copy the **admin token**, as you’ll need it for your Python script.
 Modify your script to use the correct InfluxDB credentials:
 
 ```
-influx_url = "http://35.183.158.105:8086"
+influx_url = "http://YOURIP:8086"
 token is saved in a seperate txt
 ```
 
@@ -291,13 +311,11 @@ python readCAN3batchSender.py
 
 
 
-## Set Auto Start on Ubuntu for Docker
+### Set Auto Start on Ubuntu for Docker
 
 sudo docker update --restart unless-stopped influxwfr
 
-sudo snap start docker
-
-sudo snap enable docker
+sudo systemctl enable docker
 
 
 
@@ -325,8 +343,8 @@ This project now includes a comprehensive authentication system using MongoDB an
 
 ## Setup
 1. Make sure MongoDB is properly configured with your connection string in `.env` file:
-  DATABASE_URI=mongodb+srv://your_username:your_password@your_cluster_url/?retryWrites=true&w=majority
-  JWT_SECRET=your_jwt_secret
+    DATABASE_URI=mongodb+srv://your_username:your_password@your_cluster_url/?retryWrites=true&w=majority
+    JWT_SECRET=your_jwt_secret
 
 2. Create an admin user by running:
   ``` cmd
