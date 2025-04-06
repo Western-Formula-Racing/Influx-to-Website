@@ -6,7 +6,7 @@ const LiveTrackMap = () => {
     // Default fallback location for map centering
     const [latestPoint, setLatestPoint] = useState({ lat: 42.06639, lon: -84.24139 });
     const [trackData, setTrackData] = useState(null);
-    const [trackStatus, setTrackStatus] = useState("Track data not available, waiting to request in 20 seconds");
+    const [trackStatus, setTrackStatus] = useState("Track data not available, waiting to request in 5 seconds");
 
     // Fetch latest point every .5 seconds
     useEffect(() => {
@@ -28,7 +28,7 @@ const LiveTrackMap = () => {
         return () => clearInterval(pointInterval);
     }, []);
 
-    // Fetch track data every 20 seconds
+    // Fetch track data every 5 seconds
     useEffect(() => {
         const trackInterval = setInterval(async () => {
             try {
@@ -49,7 +49,7 @@ const LiveTrackMap = () => {
                         setTrackStatus("Track data available");
                     } else {
                         setTrackData(null);
-                        setTrackStatus("Track data not available, waiting to request in 20 seconds");
+                        setTrackStatus("Track data not available, waiting to request in 5 seconds");
                     }
                 } else {
                     console.error('Failed to fetch track data:', response.statusText);
@@ -57,7 +57,7 @@ const LiveTrackMap = () => {
             } catch (error) {
                 console.error('Error fetching track data:', error);
             }
-        }, 20000);
+        }, 5000);
         return () => clearInterval(trackInterval);
     }, []);
 
@@ -83,7 +83,7 @@ const LiveTrackMap = () => {
                         mode: "lines",
                         lat: trackLats,
                         lon: trackLons,
-                        line: { width: 4, color: "rgba(74, 222, 128, 0.5)" }
+                        line: { width: 6, color: "rgba(100, 149, 237, 0.6)" } // CornflowerBlue with 40% transparency
                     }
                 ]}
                 layout={{

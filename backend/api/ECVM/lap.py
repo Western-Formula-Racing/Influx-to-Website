@@ -10,7 +10,7 @@ from flask_cors import CORS
 # Constants for the simulation
 CENTER_LAT = 42.06639
 CENTER_LON = -84.24139
-SEMIMAJOR = 0.006  # in degrees (approx 111 m per degree lat)
+SEMIMAJOR = 0.006  # in degrees
 SEMIMINOR = 0.004  # in degrees
 LAP_DURATION = 20.0  # seconds per lap
 DIST_THRESHOLD = 20  # meters to consider track closed

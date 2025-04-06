@@ -18,7 +18,7 @@ Feature Requests
 
 
 1. clone https://github.com/Western-Formula-Racing/car_to_influx
-2. The relevant python script here is **readCAN2.py**
+2. The relevant Python script here is [**readCAN3batchSender.py**](https://github.com/Western-Formula-Racing/car_to_influx/blob/main/readCAN3batchSender.py)
 3. Make sure to set the correct TOKEN in the script
 
 
@@ -161,6 +161,24 @@ On the live monitor dashboard, the x-axis of the plot should be -60s to 0s (curr
 
 # Hosting
 
+### Install Docker
+
+```
+sudo apt update
+sudo apt upgrade -y
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+
+sudo apt-get install docker-ce
+sudo docker run hello-world
+```
+
+
+
+### Set up Docker/Influx
+
 1. Export local docker: docker tag influxdb:latest myusername/influxdb:latest
 
 docker push myusername/influxdb:latest
@@ -255,8 +273,10 @@ HTTP/1.1 204 No Content
 3️⃣ Test from your **local machine**:
 
 ```
-curl -i http://35.183.158.105:8086/ping
+curl -i http://YOURIP:8086/ping
 ```
+
+You can also try to access the GUI through http://YOURIP:8086
 
 If this fails, double-check **AWS Lightsail Firewall Rules** to **allow inbound traffic on port 8086**.
 
@@ -279,7 +299,7 @@ Copy the **admin token**, as you’ll need it for your Python script.
 Modify your script to use the correct InfluxDB credentials:
 
 ```
-influx_url = "http://35.183.158.105:8086"
+influx_url = "http://YOURIP:8086"
 token is saved in a seperate txt
 ```
 
@@ -291,13 +311,13 @@ python readCAN3batchSender.py
 
 
 
-## Set Auto Start on Ubuntu for Docker
+### Set Auto Start on Ubuntu for Docker
 
+```
 sudo docker update --restart unless-stopped influxwfr
 
-sudo snap start docker
-
-sudo snap enable docker
+sudo systemctl enable docker
+```
 
 
 
@@ -325,8 +345,8 @@ This project now includes a comprehensive authentication system using MongoDB an
 
 ## Setup
 1. Make sure MongoDB is properly configured with your connection string in `.env` file:
-  DATABASE_URI=mongodb+srv://your_username:your_password@your_cluster_url/?retryWrites=true&w=majority
-  JWT_SECRET=your_jwt_secret
+    DATABASE_URI=mongodb+srv://your_username:your_password@your_cluster_url/?retryWrites=true&w=majority
+    JWT_SECRET=your_jwt_secret
 
 2. Create an admin user by running:
   ``` cmd
@@ -348,7 +368,9 @@ This project now includes a comprehensive authentication system using MongoDB an
 - Admin users have additional privileges to manage other users
 
 
+
 # lap.py Lap Detector
+<img src="my-react-app/src/assets/lappy.png" alt="Lappy Logo" width="200"/>
 ## 🚀 API: `GET /api/track`
 
 ### 1. 📍 Location Data
@@ -423,3 +445,65 @@ print(lap["start_time"], lap["end_time"])
 |-----------------------------|--------------|----------------------------------|--------------|
 | `/api/track?type=location`  | `location`   | Returns latest GPS point         | `location`   |
 | `/api/track?type=lap`       | `lap`        | Returns last completed lap       | `lap`        |
+
+
+
+
+
+# Influx CLI User Management
+
+**InfluxDB 2.x User Management Notecard**
+
+
+
+**1. Creating a New User**
+
+To create a new user (e.g., “admin”) within the organization “WFR”, use:
+
+```
+sudo docker exec -it influxwfr influx user create \
+  --name admin \
+  --password pwd \
+  --org WFR
+```
+
+*Note:* The --role flag is not supported in the current CLI version.
+
+
+
+------
+
+
+
+**2. Changing a User’s Password**
+
+To update the password for a user (e.g., “admin”), run:
+
+```
+sudo docker exec -it influxwfr influx user password --name admin
+```
+
+You will be prompted to enter the new password interactively.
+
+
+
+------
+
+
+
+**3. Deleting a User**
+
+To delete a user, first list users to retrieve the user’s ID:
+
+```
+sudo docker exec -it influxwfr influx user list
+```
+
+Then delete the user using its unique ID (for example, 0eaa6d2e8865b000):
+
+```
+sudo docker exec -it influxwfr influx user delete --id 0eaa6d2e8865b000
+```
+
+*Note:* The delete command requires the --id flag—not --name.
+
