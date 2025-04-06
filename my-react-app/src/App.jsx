@@ -3,6 +3,8 @@ import { Routes, Route, Link, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
 import FSAESimulator from "./fsae-simulator";
+// Import the track simulator when ready
+// import FSAETrackSimulator from "./FSAETrackSimulator";
 import GLV from "./GLV";
 import ECVM from './ECVM';
 import WFRDownloader from "./WFRDownloader.jsx";
@@ -119,8 +121,9 @@ function App() {
             <div className="navbar-links">
               <Link to="/" className="nav-link">Home</Link>
               <Link to="/fsae-simulator" className="nav-link">Track Map</Link>
+              {/* Comment out the live track link until component is ready */}
+              {/* <Link to="/live-track" className="nav-link">Live Track</Link> */}
               <Link to="/GLV" className="nav-link">Live View</Link>
-
               <Link to="/ECVM" className="nav-link">ECVM</Link>
               <Link to="/WFRDownloader" className="nav-link">Data Downloader</Link>
               <Link to="/login" className="nav-link nav-button">
@@ -141,6 +144,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Comment out the live track route until component is ready */}
+            {/* <Route
+              path="/live-track"
+              element={
+                <ProtectedRoute>
+                  <FSAETrackSimulator />
+                </ProtectedRoute>
+              }
+            /> */}
             <Route
               path="/GLV"
               element={
