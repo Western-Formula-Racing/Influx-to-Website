@@ -6,6 +6,7 @@ import random
 from dash import Dash, dcc, html, Output, Input
 import plotly.graph_objs as go
 from flask_cors import CORS
+import json
 
 # Constants for the simulation
 CENTER_LAT = 42.06639
@@ -68,10 +69,10 @@ def simulation_loop():
                     }
                     laps.append(lap)
                     print(f"Lap {lap['lap_number']} complete: {lap['lap_distance']} m")
-                    track = [latest_point]  # Reset for the next lap, starting with the latest point
-                    lap_start_time = time.time()  # Reset lap start time for next lap
+                    track = [latest_point]  # Reset for the next lap
+                    lap_start_time = time.time()
 
-        time.sleep(0.2)  # simulate a new point every 0.2 seconds
+        time.sleep(0.2)
 
 # Start the simulation in a background thread
 sim_thread = threading.Thread(target=simulation_loop, daemon=True)
@@ -105,52 +106,74 @@ def get_track():
             }
         else:
             lap_data = None
-        return jsonify({
-            'lap': lap_data
-        })
+        return jsonify({'lap': lap_data})
     else:
         return jsonify({'error': 'Invalid request type'}), 400
 
+# App layout: graph + API response panels
 app.layout = html.Div([
     html.H1("Live Car Track - ECVM"),
     dcc.Graph(id='live-track'),
-    dcc.Interval(id='interval-component', interval=1000, n_intervals=0)
+    dcc.Interval(id='interval-component', interval=1000, n_intervals=0),
+    html.H2("API Responses"),
+    html.Pre(id='api-location', style={'border': '1px solid #ccc', 'padding': '10px'}),
+    html.Pre(id='api-lap', style={'border': '1px solid #ccc', 'padding': '10px'})
 ])
 
+# Update the track graph
 @app.callback(
     Output('live-track', 'figure'),
     Input('interval-component', 'n_intervals')
 )
-
-
-
 def update_graph(n):
-    # Use global track data; copy to avoid thread conflicts
     global track
     if track:
         lats, lons = zip(*track)
     else:
         lats, lons = [], []
 
-    # Create a scattermap figure
-    fig = go.Figure(go.Scattermapbox(
+    fig = go.Figure(go.Scattermap(
         mode="lines+markers",
         lat=list(lats),
         lon=list(lons),
         marker={'size': 8},
         line={'width': 2}
     ))
-    # Center the map on the speedway
     fig.update_layout(
-        mapbox=dict(
+        map=dict(
             style="open-street-map",
             center={"lat": CENTER_LAT, "lon": CENTER_LON},
             zoom=13
         ),
-        margin={'l':0, 'r':0, 't':0, 'b':0},
+        margin={'l': 0, 'r': 0, 't': 0, 'b': 0},
         autosize=True
     )
     return fig
 
+# Update the API response panels
+@app.callback(
+    Output('api-location', 'children'),
+    Output('api-lap', 'children'),
+    Input('interval-component', 'n_intervals')
+)
+def update_api(n):
+    loc = {'location': {'lat': latest_point[0], 'lon': latest_point[1]}}
+    if laps:
+        last = laps[-1]
+        lap_data = {
+            'lap': {
+                'points': {
+                    'lats': [pt[0] for pt in last['points']],
+                    'lons': [pt[1] for pt in last['points']]
+                },
+                'start_time': last['start_time'],
+                'end_time': last['end_time']
+            }
+        }
+    else:
+        lap_data = {'lap': None}
+
+    return json.dumps(loc, indent=2), json.dumps(lap_data, indent=2)
+
 if __name__ == '__main__':
-    app.run(debug=True, port=8050)
+    app.run(debug=True, port=8050, host='0.0.0.0')
