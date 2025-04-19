@@ -53,9 +53,10 @@ const FSAETrackSimulator = () => {
   const SVG_HEIGHT = 500;
   const CAR_SIZE = 25;
 
-  // API URL - updated to use your main server
-  const API_URL = 'http://localhost:3000/api/auth/races';
-
+  // API URL - updated to use your AWS server
+  const API_URL = 'http://3.98.181.12:3000/api/auth/races';
+  // Track API URL - also updated to use AWS server
+  const TRACK_API_URL = 'http://3.98.181.12:3000/api/track';
 
   // Load saved races on component mount
   useEffect(() => {
@@ -167,7 +168,7 @@ const FSAETrackSimulator = () => {
   useEffect(() => {
     const pointInterval = setInterval(async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8050/api/track?type=location');
+        const response = await fetch(`${TRACK_API_URL}?type=location`);
         if (response.ok) {
           const jsonData = await response.json();
           if (jsonData && jsonData.location) {
@@ -223,7 +224,7 @@ const FSAETrackSimulator = () => {
     
     const fetchTrack = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8050/api/track?type=lap');
+        const response = await fetch(`${TRACK_API_URL}?type=lap`);
         if (response.ok) {
           const jsonData = await response.json();
           if (
