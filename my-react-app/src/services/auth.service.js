@@ -1,6 +1,5 @@
 // auth.service.js
-const API_URL = 'http://localhost:3000/api/auth/';
-
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.98.181.12:3000';
 export const login = async (username, password) => {
   const response = await fetch(`${API_URL}login`, {
     method: 'POST',
