@@ -32,7 +32,7 @@ const LiveTrackMap = () => {
     useEffect(() => {
         const trackInterval = setInterval(async () => {
             try {
-                const response = await fetch('http://3.98.181.12:8050/api/track?type=lap');
+                const response = await fetch('http://3.98.181.12:8050/api/track');
                 if (response.ok) {
                     const jsonData = await response.json();
                     if (

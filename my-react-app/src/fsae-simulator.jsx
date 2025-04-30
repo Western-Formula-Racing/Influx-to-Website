@@ -56,7 +56,7 @@ const FSAETrackSimulator = () => {
   // API URL - updated to use your AWS server
   const API_URL = 'http://3.98.181.12:3000/api/auth/races';
   // Track API URL - also updated to use AWS server
-  const TRACK_API_URL = 'http://3.98.181.12:3000/api/track';
+  const TRACK_API_URL = 'http://3.98.181.12:8050/api/track';
 
   // Load saved races on component mount
   useEffect(() => {
