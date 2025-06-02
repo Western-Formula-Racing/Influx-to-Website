@@ -34,7 +34,7 @@ jobs:
         VITE_INFLUX_TOKEN: ${{ secrets.VITE_INFLUX_TOKEN }}
         VITE_INFLUX_ORG: WFR
         VITE_INFLUX_BUCKET: ourCar
-        VITE_INFLUX_URL: http://35.183.158.105:8086
+        VITE_INFLUX_URL: http://influxwfr:8086
         VITE_PORT: 3000
     - name: Deploy to server
       uses: appleboy/ssh-action@v0.1.5
@@ -66,6 +66,12 @@ jobs:
           docker run -d \
             --name frontend \
             --restart unless-stopped \
+            --memory 0.5g \
+            --memory-swap 1g \
+            --cpus 0.5 \
             -p 8060:80 \
             -v /home/ubuntu/frontend-build:/usr/share/nginx/html:ro \
             nginx:alpine
+          
+          # Connect to datalink network for InfluxDB access
+          docker network connect datalink frontend
