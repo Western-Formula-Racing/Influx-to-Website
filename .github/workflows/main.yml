@@ -13,19 +13,21 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
+        cache-dependency-path: 'my-react-app/package-lock.json'
     - name: Debug files
-      run: |
-        ls -la
-        cat package.json
-    - name: Install dependencies
-      run: npm install
-    - name: Build with vite
       run: |
         pwd
         ls -la
-        cd my-react-app || true
+        cd my-react-app
         ls -la
-        npx vite build --base=./
+    - name: Install dependencies
+      run: |
+        cd my-react-app
+        npm install
+    - name: Build with vite
+      run: |
+        cd my-react-app
+        npx vite build
       env:
         VITE_API_BASE_URL: http://3.98.181.12:3000
         VITE_DATABASE_URI: ${{ secrets.VITE_DATABASE_URI }}
@@ -51,9 +53,9 @@ jobs:
         host: 3.98.181.12
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "dist/*"
+        source: "my-react-app/dist/*"
         target: "/home/ubuntu/frontend-build/"
-        strip_components: 1
+        strip_components: 2
     - name: Start frontend container
       uses: appleboy/ssh-action@v0.1.5
       with:
