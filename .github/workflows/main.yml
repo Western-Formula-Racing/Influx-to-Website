@@ -20,7 +20,12 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Build with vite
-      run: npx vite build
+      run: |
+        pwd
+        ls -la
+        cd my-react-app || true
+        ls -la
+        npx vite build --base=./
       env:
         VITE_API_BASE_URL: http://3.98.181.12:3000
         VITE_DATABASE_URI: ${{ secrets.VITE_DATABASE_URI }}
