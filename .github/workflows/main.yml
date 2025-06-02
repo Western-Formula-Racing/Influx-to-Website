@@ -34,7 +34,7 @@ jobs:
         VITE_INFLUX_TOKEN: ${{ secrets.VITE_INFLUX_TOKEN }}
         VITE_INFLUX_ORG: WFR
         VITE_INFLUX_BUCKET: ourCar
-        VITE_INFLUX_URL: http://influxwfr:8086
+        VITE_INFLUX_URL: ${{ secrets.VITE_INFLUX_URL }}
         VITE_PORT: 3000
     - name: Deploy to server
       uses: appleboy/ssh-action@v0.1.5
