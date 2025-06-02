@@ -1,9 +1,7 @@
 name: Deploy Frontend
-
 on:
   push:
     branches: [ main ]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,11 +13,11 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm ci
+      run: npm install
       
     - name: Build project
       run: npm run build
@@ -39,14 +37,9 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          # Stop existing frontend container if running
           docker stop frontend 2>/dev/null || true
           docker rm frontend 2>/dev/null || true
-          
-          # Remove old files
           rm -rf /home/ubuntu/frontend-build
-          
-          # Create directory for new build
           mkdir -p /home/ubuntu/frontend-build
           
     - name: Copy build files
@@ -66,7 +59,6 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          # Start new frontend container
           docker run -d \
             --name frontend \
             --restart unless-stopped \
