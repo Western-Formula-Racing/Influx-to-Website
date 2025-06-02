@@ -507,3 +507,19 @@ sudo docker exec -it influxwfr influx user delete --id 0eaa6d2e8865b000
 
 *Note:* The delete command requires the --id flag—not --name.
 
+
+# Frontend Deployment
+
+The React frontend is automatically deployed to the production server using GitHub Actions.
+
+## Live Application
+- **Production URL**: http://3.98.181.12:8060
+- **Auto-deployment**: Triggers on every push to `main` branch
+
+## 🛠️ Development Setup
+
+### Local Development
+```
+cd my-react-app
+npm install
+npm run dev  # Runs on http://localhost:5173
