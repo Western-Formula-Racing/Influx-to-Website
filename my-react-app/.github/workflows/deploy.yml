@@ -1,0 +1,75 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      env:
+        VITE_API_BASE_URL: http://3.98.181.12:3000
+        VITE_DATABASE_URI: ${{ secrets.VITE_DATABASE_URI }}
+        VITE_INFLUX_TOKEN: ${{ secrets.VITE_INFLUX_TOKEN }}
+        VITE_INFLUX_ORG: WFR
+        VITE_INFLUX_BUCKET: ourCar
+        VITE_INFLUX_URL: http://35.183.158.105:8086
+        VITE_PORT: 3000
+        
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: 3.98.181.12
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Stop existing frontend container if running
+          docker stop frontend 2>/dev/null || true
+          docker rm frontend 2>/dev/null || true
+          
+          # Remove old files
+          rm -rf /home/ubuntu/frontend-build
+          
+          # Create directory for new build
+          mkdir -p /home/ubuntu/frontend-build
+          
+    - name: Copy build files
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: 3.98.181.12
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "dist/*"
+        target: "/home/ubuntu/frontend-build/"
+        strip_components: 1
+        
+    - name: Start frontend container
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: 3.98.181.12
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Start new frontend container
+          docker run -d \
+            --name frontend \
+            --restart unless-stopped \
+            -p 8060:80 \
+            -v /home/ubuntu/frontend-build:/usr/share/nginx/html:ro \
+            nginx:alpine
