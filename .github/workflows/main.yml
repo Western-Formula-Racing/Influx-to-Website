@@ -1,28 +1,26 @@
 name: Deploy Frontend
-
 on:
   push:
     branches: [ main ]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-      
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
-        
+    - name: Debug files
+      run: |
+        ls -la
+        cat package.json
     - name: Install dependencies
-      run: npm ci
-      
-    - name: Build project
-      run: npm run build
+      run: npm install
+    - name: Build with vite
+      run: npx vite build
       env:
         VITE_API_BASE_URL: http://3.98.181.12:3000
         VITE_DATABASE_URI: ${{ secrets.VITE_DATABASE_URI }}
@@ -31,7 +29,6 @@ jobs:
         VITE_INFLUX_BUCKET: ourCar
         VITE_INFLUX_URL: http://35.183.158.105:8086
         VITE_PORT: 3000
-        
     - name: Deploy to server
       uses: appleboy/ssh-action@v0.1.5
       with:
@@ -39,16 +36,10 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          # Stop existing frontend container if running
           docker stop frontend 2>/dev/null || true
           docker rm frontend 2>/dev/null || true
-          
-          # Remove old files
           rm -rf /home/ubuntu/frontend-build
-          
-          # Create directory for new build
           mkdir -p /home/ubuntu/frontend-build
-          
     - name: Copy build files
       uses: appleboy/scp-action@v0.1.4
       with:
@@ -58,7 +49,6 @@ jobs:
         source: "dist/*"
         target: "/home/ubuntu/frontend-build/"
         strip_components: 1
-        
     - name: Start frontend container
       uses: appleboy/ssh-action@v0.1.5
       with:
@@ -66,7 +56,6 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          # Start new frontend container
           docker run -d \
             --name frontend \
             --restart unless-stopped \
