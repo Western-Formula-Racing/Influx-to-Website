@@ -1,34 +1,89 @@
 # Influx-to-Website
 
-npm install @influxdata/influxdb-client
+A real-time data visualization platform for Western Formula Racing that integrates InfluxDB telemetry data with a React-based web interface. This system enables live monitoring of vehicle sensor data and historical data analysis.
 
+## Overview
 
+This project provides:
+- Real-time visualization of vehicle telemetry data from InfluxDB
+- User authentication and role-based access control
+- Interactive data plotting and analysis tools
+- Live GPS tracking and lap time detection
+- RESTful API for data access
 
+## Technology Stack
 
+- **Frontend**: React + Vite
+- **Backend**: Node.js + Express
+- **Database**: MongoDB (user management), InfluxDB (telemetry data)
+- **Authentication**: JWT-based authentication
+- **Deployment**: GitHub Actions for automated deployment
 
-# Next Steps
+## Quick Start
 
-Feature Requests
+### Prerequisites
 
-1. Allow custom x-axis, to plot sensor value against another value
-2. [completed] Overlay of graphs (Influxdb graph viewer supports natively) 
-3. Pull units from InfluxDB and display on the graph
-# Testing setup - with Python script and docker Influx - HZ
+- Node.js (v14 or higher)
+- Docker
+- MongoDB instance
+- Python 3.x (for testing data ingestion)
 
+### Installation
 
+1. Clone the repository:
+```bash
+git clone https://github.com/Western-Formula-Racing/Influx-to-Website.git
+cd Influx-to-Website
+```
 
-1. clone https://github.com/Western-Formula-Racing/car_to_influx
-2. The relevant Python script here is [**readCAN3batchSender.py**](https://github.com/Western-Formula-Racing/car_to_influx/blob/main/readCAN3batchSender.py)
-3. Make sure to set the correct TOKEN in the script
+2. Install dependencies:
+```bash
+npm install
+cd backend && npm install
+cd ../my-react-app && npm install
+```
 
+3. Configure environment variables (see Configuration section)
 
+4. Start the development servers:
+```bash
+# Backend
+cd backend
+npm run dev
 
-## Docker - Influx
+# Frontend (in separate terminal)
+cd my-react-app
+npm run dev
+```
 
-1. Install Docker
-2. in cmd: 
+## Configuration
+
+Create a `.env` file in the backend directory with the following variables:
 
 ```
+DATABASE_URI=mongodb+srv://your_username:your_password@your_cluster_url/?retryWrites=true&w=majority
+JWT_SECRET=your_jwt_secret
+INFLUX_URL=http://localhost:8086
+INFLUX_TOKEN=your_influx_token
+INFLUX_ORG=WFR
+INFLUX_BUCKET=ourCar
+```
+
+## Development Setup
+
+### Setting Up InfluxDB with Docker
+
+1. Install Docker following the official documentation
+
+2. Create directories for persistent storage:
+```bash
+mkdir -p ~/influxdb/data
+mkdir -p ~/influxdb/config
+sudo chown -R 1000:1000 ~/influxdb
+```
+
+3. Run the InfluxDB container:
+```bash
 sudo docker run -d \
   --name influxwfr \
   -p 8086:8086 \
@@ -42,102 +97,197 @@ sudo docker run -d \
   influxdb:2
 ```
 
+4. Access the InfluxDB UI at `http://localhost:8086` and log in with:
+   - Username: myuser
+   - Password: mypassword123
 
+5. Create an API token from the InfluxDB UI for use in your application
 
+### Testing with Sample Data
 
+1. Clone the testing repository:
+```bash
+git clone https://github.com/Western-Formula-Racing/car_to_influx
+```
 
-In the address bar at the top, type: `http://localhost:8086`
+2. Use the `readCAN3batchSender.py` script to send test data to InfluxDB
 
-You should see a login screen
+3. Update the script with your InfluxDB token
 
-Log in using:
+4. Run the script to populate InfluxDB with test data
 
-- Username: myuser
-- Password: mypassword123
-
-Then: 
-
-1. Find API Key
-2. Create an organization called WFR
-   1. click your profile icon, then click Create Organization
-3. Create a new bucket in Influx: call it "ourCar" <- you can change this in the python script, just make sure it matches.
-   1. Consider changing the data retention policy to 1 hour to keep it clean for every testing session
-
-
-
-Now, start running the Python code and use the graph viewer to view the testing data:
-
-If you want something that's constantly moving:
-
+For testing constantly changing data, use the sensor reading:
+```
 ourCar-canBus-sensorReading-M166_Current_info-166-INV_Phase_A_Current
+```
 
+## Authentication System
 
+The application includes JWT-based authentication with MongoDB for user storage.
 
-## Query Data Processing Pipeline
+### Initial Setup
 
-1. **Query Execution (executeQuery function)**:
-   - Takes a Flux query as input
-   - Makes a POST request to InfluxDB's API endpoint with:
-     * URL: `${influxConfig.url}/api/v2/query?org=${influxConfig.org}`
-     * Authentication: Token-based via headers
-     * Request format: Flux query language (`application/vnd.flux`)
-     * Response format: CSV (`application/csv`)
-   - Checks for successful response (response.ok)
-   - Converts response to text (CSV format)
-   - Passes CSV to parseInfluxResponse
+1. Create an admin user:
+```bash
+cd backend
+node scripts/setup-admin.js
+```
 
-2. **CSV Parsing (parseInfluxResponse function)**:
-   
-   Input Validation:
-   ```javascript
-   if (!csvData || csvData.trim() === '') {
-     return [];
-   }
-   ```
-   - Checks if data exists and isn't empty
-   
-   Data Structure Analysis:
-   ```javascript
-   const lines = csvData.trim().split('\n');
-   if (lines.length < 2) {
-     return [];
-   }
-   ```
-   - Splits CSV into lines
-   - Ensures there's at least a header and one data row
-   
-   Header Processing:
-   ```javascript
-   const headers = lines[0].split(',');
-   const timeIndex = headers.findIndex(h => h === '_time');
-   const valueIndex = headers.findIndex(h => h === '_value');
-   ```
-   - Extracts column headers
-   - Locates critical columns: '_time' and '_value'
-   
-   Data Transformation Pipeline:
-   ```javascript
-   return lines.slice(1)
-       .filter(line => line.trim() !== '')
-       .map(line => {
-         const values = line.split(',');
-         return {
-           _time: values[timeIndex],
-           _value: parseFloat(values[valueIndex])
-         };
-       })
-       .filter(point => !isNaN(point._value));
-   ```
-   1. `slice(1)`: Skips header row
-   2. First `filter`: Removes empty lines
-   3. `map`: Transforms each line into an object with _time and _value
-   4. Second `filter`: Removes entries with invalid numerical values
+2. Default admin credentials:
+   - Username: admin
+   - Password: admin123
 
-The final output is an array of objects, each containing:
-- `_time`: Timestamp from InfluxDB
-- `_value`: Numerical value (sensor reading)
+### Features
 
-Example transformation:
+- JWT token-based authentication
+- Protected routes requiring valid authentication
+- Role-based access control (admin privileges)
+- Token persistence in localStorage
+- User management capabilities for administrators
+
+## API Documentation
+
+### Track API Endpoints
+
+**Base URL**: `/api/track`
+
+#### Get Current Location
+```
+GET /api/track?type=location
+```
+
+Returns the most recent GPS coordinate of the vehicle.
+
+**Response:**
+```json
+{
+  "location": {
+    "lat": 42.06648123,
+    "lon": -84.24137456
+  }
+}
+```
+
+**Example Usage:**
+```bash
+curl "http://127.0.0.1:8050/api/track?type=location"
+```
+
+```js
+fetch("http://127.0.0.1:8050/api/track?type=location")
+  .then(res => res.json())
+  .then(data => console.log(data.location));
+```
+
+#### Get Last Completed Lap
+```
+GET /api/track?type=lap
+```
+
+Returns the latest completed lap with GPS path and timing data.
+
+**Response:**
+```json
+{
+  "lap": {
+    "points": {
+      "lats": [42.0664, 42.0665, ...],
+      "lons": [-84.2413, -84.2412, ...]
+    },
+    "start_time": 1711931802.745823,
+    "end_time": 1711931823.462191
+  }
+}
+```
+
+**Example Usage:**
+```bash
+curl "http://127.0.0.1:8050/api/track?type=lap"
+```
+
+```python
+import requests
+res = requests.get("http://127.0.0.1:8050/api/track?type=lap")
+lap = res.json()["lap"]
+print(lap["start_time"], lap["end_time"])
+```
+
+#### Error Response
+
+If an unsupported `type` is passed:
+```json
+{
+  "error": "Invalid request type"
+}
+```
+**HTTP Status**: `400 Bad Request`
+
+#### Endpoint Summary
+
+| Endpoint                     | Type         | Description                     | Response Key |
+|-----------------------------|--------------|----------------------------------|--------------|
+| `/api/track?type=location`  | `location`   | Returns latest GPS point         | `location`   |
+| `/api/track?type=lap`       | `lap`        | Returns last completed lap       | `lap`        |
+
+## Data Processing Pipeline
+
+The query execution and data processing follows this pipeline:
+
+### 1. Query Execution (`executeQuery` function)
+
+- Takes a Flux query as input
+- Makes a POST request to InfluxDB's API endpoint:
+  - URL: `${influxConfig.url}/api/v2/query?org=${influxConfig.org}`
+  - Authentication: Token-based via headers
+  - Request format: Flux query language (`application/vnd.flux`)
+  - Response format: CSV (`application/csv`)
+- Returns CSV data for parsing
+
+### 2. CSV Parsing (`parseInfluxResponse` function)
+
+**Input Validation:**
+```javascript
+if (!csvData || csvData.trim() === '') {
+  return [];
+}
+```
+
+**Data Structure Analysis:**
+```javascript
+const lines = csvData.trim().split('\n');
+if (lines.length < 2) {
+  return [];
+}
+```
+
+**Header Processing:**
+```javascript
+const headers = lines[0].split(',');
+const timeIndex = headers.findIndex(h => h === '_time');
+const valueIndex = headers.findIndex(h => h === '_value');
+```
+
+**Data Transformation:**
+```javascript
+return lines.slice(1)
+    .filter(line => line.trim() !== '')
+    .map(line => {
+      const values = line.split(',');
+      return {
+        _time: values[timeIndex],
+        _value: parseFloat(values[valueIndex])
+      };
+    })
+    .filter(point => !isNaN(point._value));
+```
+
+**Processing Steps:**
+1. Skip header row with `slice(1)`
+2. Remove empty lines
+3. Transform each line into an object with `_time` and `_value`
+4. Filter out entries with invalid numerical values
+
+**Example Transformation:**
 ```
 Input CSV:
 _time,_value,_field,_measurement
@@ -151,68 +301,44 @@ Output:
 ]
 ```
 
+## Production Deployment
 
-Future Development: 
-On the live monitor dashboard, the x-axis of the plot should be -60s to 0s (current), instead of absolute time. 
+### Live Application
 
+- **Production URL**: http://3.98.181.12:8060
+- **Auto-deployment**: GitHub Actions triggers on every push to `main` branch
 
+### Server Setup
 
+#### Install Docker
 
-
-# Hosting
-
-### Install Docker
-
-```
+```bash
 sudo apt update
 sudo apt upgrade -y
 sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 sudo apt-get update
-
 sudo apt-get install docker-ce
 sudo docker run hello-world
 ```
 
+#### Deploy InfluxDB Container
 
-
-### Set up Docker/Influx
-
-1. Export local docker: docker tag influxdb:latest myusername/influxdb:latest
-
-docker push myusername/influxdb:latest
-
-**🚀 Step 1: Pull the Latest InfluxDB Image**
-
-```
+1. Pull the InfluxDB image:
+```bash
 sudo docker pull influxdb:2
 ```
 
-------
-
-**🚀 Step 2: Create Directories for Persistent Storage**
-
-Create directories on your **Lightsail instance** to store **InfluxDB data** and **configurations**:
-
-```
+2. Create persistent storage directories:
+```bash
 mkdir -p ~/influxdb/data
 mkdir -p ~/influxdb/config
-```
-
-Give Docker permission to access them:
-
-```
 sudo chown -R 1000:1000 ~/influxdb
 ```
 
-
-
-**🚀 Step 3: Run the InfluxDB Container with the Correct Settings**
-
-Now, run the container using your updated configuration:
-
-```
+3. Run the container:
+```bash
 sudo docker run -d \
   --name influxwfr \
   -p 8086:8086 \
@@ -226,300 +352,119 @@ sudo docker run -d \
   influxdb:2
 ```
 
-**🚀 Step 4: Verify the Container is Running**
-
-Check the status:
-
-```
+4. Verify the container is running:
+```bash
 sudo docker ps -a
 ```
 
-​	•	If **STATUS** is Up, the container is running. ✅
-
-​	•	If it **exits**, check logs:
-
-```
+If the container exits, check logs:
+```bash
 sudo docker logs influxwfr
 ```
 
-
-
-**🚀 Step 5: Test the Connection**
-
-1️⃣ Check if InfluxDB is listening inside the container:
-
-```
+5. Test the connection:
+```bash
+# Check if InfluxDB is listening inside the container
 sudo docker exec -it influxwfr influx ping
-```
+# Expected output: OK
 
-Expected output:
-
-```
-OK
-```
-
-2️⃣ Test the API on your **Lightsail instance**:
-
-```
+# Test the API locally
 curl -i http://localhost:8086/ping
-```
+# Expected output: HTTP/1.1 204 No Content
 
-Expected output:
-
-```
-HTTP/1.1 204 No Content
-```
-
-3️⃣ Test from your **local machine**:
-
-```
+# Test from your local machine (replace YOURIP with server IP)
 curl -i http://YOURIP:8086/ping
 ```
 
-You can also try to access the GUI through http://YOURIP:8086
+Access the InfluxDB UI at `http://YOURIP:8086`. If this fails, check your firewall rules to allow inbound traffic on port 8086.
 
-If this fails, double-check **AWS Lightsail Firewall Rules** to **allow inbound traffic on port 8086**.
-
-
-
-**🚀 Step 6: Retrieve Your InfluxDB Token**
-
-Run:
-
-```
+6. Retrieve your InfluxDB token:
+```bash
 sudo docker exec influxwfr influx auth list
 ```
 
-Copy the **admin token**, as you’ll need it for your Python script.
+Copy the admin token for use in your Python script.
 
-
-
-**🚀 Step 7: Update Your Python Script (readCANxxx.py)**
-
-Modify your script to use the correct InfluxDB credentials:
-
-```
+7. Update your Python script (`readCANxxx.py`) with the correct InfluxDB credentials:
+```python
 influx_url = "http://YOURIP:8086"
-token is saved in a seperate txt
+# Token should be stored in a separate file
 ```
 
 Run the script:
-
-```
+```bash
 python readCAN3batchSender.py
 ```
 
+#### Configure Auto-Restart
 
+Enable Docker to start on boot and configure the container to restart automatically:
 
-### Set Auto Start on Ubuntu for Docker
-
-```
+```bash
 sudo docker update --restart unless-stopped influxwfr
-
 sudo systemctl enable docker
 ```
 
-
-
-Check if it works:
-
+Verify after reboot:
+```bash
 sudo reboot
-
 sudo docker ps
-
-
-
-
-
-# Authentication System
-
-This project now includes a comprehensive authentication system using MongoDB and JWT (JSON Web Tokens).
-
-
-
-## Features
-- User authentication with JWT tokens
-- Protected routes for authorized access
-- MongoDB integration for user storage
-- Role-based access control (admin users)
-
-## Setup
-1. Make sure MongoDB is properly configured with your connection string in `.env` file:
-    DATABASE_URI=mongodb+srv://your_username:your_password@your_cluster_url/?retryWrites=true&w=majority
-    JWT_SECRET=your_jwt_secret
-
-2. Create an admin user by running:
-  ``` cmd
-  cd backend
-  node scripts/setup-admin.js
-  npm install
-  npm install -g nodemon
-  nodemon index.js
-  ```
-
-3. Default admin credentials:
-- Username: admin
-- Password: admin123
-
-## Usage
-- Login via the login page to receive a JWT token
-- Protected routes will automatically check for valid authentication
-- The token is stored in localStorage and will persist until logout
-- Admin users have additional privileges to manage other users
-
-
-
-# lap.py Lap Detector
-<img src="my-react-app/src/assets/lappy.png" alt="Lappy Logo" width="200"/>
-## 🚀 API: `GET /api/track`
-
-### 1. 📍 Location Data
-- **Query**: `?type=location`
-- **Description**: Returns the most recent GPS coordinate (latitude and longitude) of the vehicle.
-- **Response**:
-```json
-{
-  "location": {
-    "lat": 42.06648123,
-    "lon": -84.24137456
-  }
-}
 ```
-- **Example Usage**:
+
+## InfluxDB User Management
+
+### Creating a New User
+
 ```bash
-curl "http://127.0.0.1:8050/api/track?type=location"
-```
-
-```js
-fetch("http://127.0.0.1:8050/api/track?type=location")
-  .then(res => res.json())
-  .then(data => console.log(data.location));
-```
-
----
-
-### 2. 🏁 Last Completed Lap
-- **Query**: `?type=lap`
-- **Description**: Returns the latest completed lap with GPS path and start/end timestamps.
-- **Response**:
-```json
-{
-  "lap": {
-    "points": {
-      "lats": [42.0664, 42.0665, ...],
-      "lons": [-84.2413, -84.2412, ...]
-    },
-    "start_time": 1711931802.745823,
-    "end_time": 1711931823.462191
-  }
-}
-```
-- **Example Usage**:
-```bash
-curl "http://127.0.0.1:8050/api/track?type=lap"
-```
-
-```python
-import requests
-res = requests.get("http://127.0.0.1:8050/api/track?type=lap")
-lap = res.json()["lap"]
-print(lap["start_time"], lap["end_time"])
-```
-
----
-
-### 3. ❌ Invalid Request
-- If an unsupported `type` is passed, the response will be:
-```json
-{
-  "error": "Invalid request type"
-}
-```
-- **HTTP Status**: `400 Bad Request`
-
----
-
-### 📘 Summary
-
-| Endpoint                     | Type         | Description                     | Response Key |
-|-----------------------------|--------------|----------------------------------|--------------|
-| `/api/track?type=location`  | `location`   | Returns latest GPS point         | `location`   |
-| `/api/track?type=lap`       | `lap`        | Returns last completed lap       | `lap`        |
-
-
-
-
-
-# Influx CLI User Management
-
-**InfluxDB 2.x User Management Notecard**
-
-
-
-**1. Creating a New User**
-
-To create a new user (e.g., “admin”) within the organization “WFR”, use:
-
-```
 sudo docker exec -it influxwfr influx user create \
   --name admin \
   --password pwd \
   --org WFR
 ```
 
-*Note:* The --role flag is not supported in the current CLI version.
+Note: The `--role` flag is not supported in the current CLI version.
 
+### Changing a User's Password
 
-
-------
-
-
-
-**2. Changing a User’s Password**
-
-To update the password for a user (e.g., “admin”), run:
-
-```
+```bash
 sudo docker exec -it influxwfr influx user password --name admin
 ```
 
 You will be prompted to enter the new password interactively.
 
+### Deleting a User
 
-
-------
-
-
-
-**3. Deleting a User**
-
-To delete a user, first list users to retrieve the user’s ID:
-
-```
+1. List users to retrieve the user ID:
+```bash
 sudo docker exec -it influxwfr influx user list
 ```
 
-Then delete the user using its unique ID (for example, 0eaa6d2e8865b000):
-
+2. Delete the user using its ID:
+```bash
+sudo docker exec -it influxwfr influx user delete --id <user_id>
 ```
-sudo docker exec -it influxwfr influx user delete --id 0eaa6d2e8865b000
-```
 
-*Note:* The delete command requires the --id flag—not --name.
+Note: The delete command requires the `--id` flag, not `--name`.
 
+## Feature Roadmap
 
-# Frontend Deployment
+### Planned Features
 
-The React frontend is automatically deployed to the production server using GitHub Actions.
+1. Custom x-axis configuration to plot sensor values against other values
+2. Unit display pulled from InfluxDB metadata
+3. Relative time x-axis for live monitor (-60s to 0s instead of absolute time)
 
-## Live Application
-- **Production URL**: http://3.98.181.12:8060
-- **Auto-deployment**: Triggers on every push to `main` branch
+### Completed Features
 
-## 🛠️ Development Setup
+- Graph overlay functionality
+- JWT authentication system
+- Live GPS tracking
+- Lap time detection
 
-### Local Development
-```
-cd my-react-app
-npm install
-npm run dev  # Runs on http://localhost:5173
+## Contributing
+
+This is a Western Formula Racing team project. For contributions or questions, please contact the team directly.
+
+## License
+
+This project is maintained by Western Formula Racing.
